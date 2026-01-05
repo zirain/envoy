@@ -9,6 +9,7 @@ api_proto_package(
         "//envoy/annotations:pkg",
         "//envoy/config/common/mutation_rules/v3:pkg",
         "//envoy/config/core/v3:pkg",
+        "//envoy/extensions/common/ratelimit/v3:pkg",
         "//envoy/type/matcher/v3:pkg",
         "//envoy/type/metadata/v3:pkg",
         "//envoy/type/tracing/v3:pkg",

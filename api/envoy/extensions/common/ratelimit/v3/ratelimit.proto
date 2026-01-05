@@ -34,6 +34,9 @@ enum XRateLimitHeadersRFCVersion {
   // * ``X-RateLimit-Reset`` - indicates the number of seconds until reset of
   //   the current time-window. The value is returned by the remaining fill interval of the token bucket.
   DRAFT_VERSION_03 = 1;
+
+  // Disabled explicitly, even if enabled on the filter or route.
+  EXPLICIT_OFF = 2;
 }
 
 enum VhRateLimitsOptions {
