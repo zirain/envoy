@@ -1,5 +1,9 @@
 #include "source/extensions/filters/http/ratelimit/ratelimit_headers.h"
 
+#include <vector>
+
+#include "envoy/extensions/common/ratelimit/v3/ratelimit.pb.h"
+
 #include "source/common/http/header_map_impl.h"
 #include "source/extensions/filters/http/common/ratelimit_headers.h"
 
@@ -11,6 +15,7 @@ namespace HttpFilters {
 namespace RateLimitFilter {
 
 Http::ResponseHeaderMapPtr XRateLimitHeaderUtils::create(
+    const std::vector<Envoy::RateLimit::Descriptor>& descriptors,
     Filters::Common::RateLimit::DescriptorStatusListPtr&& descriptor_statuses) {
   Http::ResponseHeaderMapPtr result = Http::ResponseHeaderMapImpl::create();
   if (!descriptor_statuses || descriptor_statuses->empty()) {
@@ -21,8 +26,15 @@ Http::ResponseHeaderMapPtr XRateLimitHeaderUtils::create(
   absl::optional<envoy::service::ratelimit::v3::RateLimitResponse_DescriptorStatus>
       min_remaining_limit_status;
   std::string quota_policy;
+  int i = -1;
   for (auto&& status : *descriptor_statuses) {
+    i++;
     if (!status.has_current_limit()) {
+      continue;
+    }
+    const auto& descriptor = descriptors[i];
+    if (descriptor.enable_x_rate_limit_headers_ ==
+        envoy::extensions::common::ratelimit::v3::EXPLICIT_OFF) {
       continue;
     }
     if (!min_remaining_limit_status ||

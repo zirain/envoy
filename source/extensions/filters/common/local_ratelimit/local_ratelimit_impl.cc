@@ -194,7 +194,8 @@ LocalRateLimiterImpl::requestAllowed(absl::Span<const RateLimit::Descriptor> req
             share_factor, match_result.request_descriptor.get().hits_addend_.value_or(1))) {
       // If the request is forbidden by a descriptor, return the result and the descriptor
       // token bucket.
-      return {false, std::shared_ptr<TokenBucketContext>(match_result.token_bucket)};
+      return {false, match_result.request_descriptor.get().enable_x_rate_limit_headers_,
+              std::shared_ptr<TokenBucketContext>(match_result.token_bucket)};
     }
     ENVOY_LOG(trace,
               "request allowed by descriptor with fill rate: {}, maxToken: {}, remainingToken {}",
@@ -205,28 +206,38 @@ LocalRateLimiterImpl::requestAllowed(absl::Span<const RateLimit::Descriptor> req
   // See if the request is forbidden by the default token bucket.
   if (matched_results.empty() || always_consume_default_token_bucket_) {
     if (default_token_bucket_ == nullptr) {
-      return {true, matched_results.empty()
-                        ? std::shared_ptr<TokenBucketContext>(nullptr)
-                        : std::shared_ptr<TokenBucketContext>(matched_results[0].token_bucket)};
+      return {true,
+              matched_results.empty()
+                  ? XRateLimitHeadersRFCVersion::OFF
+                  : matched_results[0].request_descriptor.get().enable_x_rate_limit_headers_,
+
+              matched_results.empty()
+                  ? std::shared_ptr<TokenBucketContext>(nullptr)
+                  : std::shared_ptr<TokenBucketContext>(matched_results[0].token_bucket)};
     }
     ASSERT(default_token_bucket_ != nullptr);
 
     if (const bool result = default_token_bucket_->consume(share_factor); !result) {
       // If the request is forbidden by the default token bucket, return the result and the
       // default token bucket.
-      return {false, std::shared_ptr<TokenBucketContext>(default_token_bucket_)};
+      return {false, XRateLimitHeadersRFCVersion::OFF,
+              std::shared_ptr<TokenBucketContext>(default_token_bucket_)};
     }
 
     // If the request is allowed then return the result the token bucket. The descriptor
     // token bucket will be selected as priority if it exists.
     return {true,
+            matched_results.empty()
+                ? XRateLimitHeadersRFCVersion::OFF
+                : matched_results[0].request_descriptor.get().enable_x_rate_limit_headers_,
             matched_results.empty() ? default_token_bucket_ : matched_results[0].token_bucket};
   };
 
   ASSERT(!matched_results.empty());
   std::shared_ptr<TokenBucketContext> bucket_context =
       std::shared_ptr<TokenBucketContext>(matched_results[0].token_bucket);
-  return {true, bucket_context};
+  return {true, matched_results[0].request_descriptor.get().enable_x_rate_limit_headers_,
+          bucket_context};
 }
 
 // Compare the request descriptor entries with the user descriptor entries. If all non-empty user

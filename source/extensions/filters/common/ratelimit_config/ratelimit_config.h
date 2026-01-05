@@ -16,6 +16,8 @@ namespace RateLimit {
 
 using ProtoRateLimit = envoy::config::route::v3::RateLimit;
 using RateLimitDescriptors = std::vector<Envoy::RateLimit::Descriptor>;
+using XRateLimitHeadersRFCVersion =
+    envoy::extensions::common::ratelimit::v3::XRateLimitHeadersRFCVersion;
 
 class RateLimitPolicy : Logger::Loggable<Envoy::Logger::Id::config> {
 public:
@@ -32,6 +34,7 @@ public:
 
 private:
   const bool apply_on_stream_done_ = false;
+  const XRateLimitHeadersRFCVersion enable_x_rate_limit_headers_;
   Formatter::FormatterProviderPtr hits_addend_provider_;
   absl::optional<uint64_t> hits_addend_;
   std::vector<Envoy::RateLimit::DescriptorProducerPtr> actions_;

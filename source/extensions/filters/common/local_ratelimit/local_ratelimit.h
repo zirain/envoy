@@ -11,6 +11,9 @@ namespace Filters {
 namespace Common {
 namespace LocalRateLimit {
 
+using XRateLimitHeadersRFCVersion =
+    envoy::extensions::common::ratelimit::v3::XRateLimitHeadersRFCVersion;
+
 class TokenBucketContext {
 public:
   virtual ~TokenBucketContext() = default;
@@ -25,6 +28,7 @@ class LocalRateLimiter {
 public:
   struct Result {
     bool allowed{};
+    XRateLimitHeadersRFCVersion rate_limit_headers_rfc_version{XRateLimitHeadersRFCVersion::OFF};
     std::shared_ptr<const TokenBucketContext> token_bucket_context{};
   };
 

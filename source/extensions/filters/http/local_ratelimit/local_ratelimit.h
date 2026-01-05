@@ -204,6 +204,8 @@ private:
   // per-route config.
   const FilterConfig* used_config_{};
   std::shared_ptr<const Filters::Common::LocalRateLimit::TokenBucketContext> token_bucket_context_;
+  envoy::extensions::common::ratelimit::v3::XRateLimitHeadersRFCVersion
+      rate_limit_headers_rfc_version_;
 
   VhRateLimitOptions vh_rate_limits_;
 };

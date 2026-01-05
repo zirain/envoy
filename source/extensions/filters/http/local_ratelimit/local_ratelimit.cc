@@ -163,6 +163,8 @@ Http::FilterHeadersStatus Filter::decodeHeaders(Http::RequestHeaderMap& headers,
   if (ENVOY_LOG_CHECK_LEVEL(debug)) {
     for (const auto& request_descriptor : descriptors) {
       ENVOY_LOG(debug, "populate descriptor: {}", request_descriptor.toString());
+      ENVOY_LOG(debug, "  enable_x_rate_limit_headers: {}",
+                XRateLimitHeadersRFCVersion_Name(request_descriptor.enable_x_rate_limit_headers_));
     }
   }
 
@@ -170,6 +172,7 @@ Http::FilterHeadersStatus Filter::decodeHeaders(Http::RequestHeaderMap& headers,
   // The global limiter, route limiter, or connection level limiter are all have longer life
   // than the request, so we can safely store the token bucket context reference.
   token_bucket_context_ = result.token_bucket_context;
+  rate_limit_headers_rfc_version_ = result.rate_limit_headers_rfc_version;
 
   if (result.allowed) {
     used_config_->stats().ok_.inc();
@@ -199,7 +202,18 @@ Http::FilterHeadersStatus Filter::decodeHeaders(Http::RequestHeaderMap& headers,
 
 Http::FilterHeadersStatus Filter::encodeHeaders(Http::ResponseHeaderMap& headers, bool) {
   // We can never assume the decodeHeaders() was called before encodeHeaders().
-  if (used_config_->enableXRateLimitHeaders() && token_bucket_context_) {
+  if (!token_bucket_context_) {
+    return Http::FilterHeadersStatus::Continue;
+  }
+
+  bool enableXRateLimitHeaders =
+      used_config_->enableXRateLimitHeaders()
+          ? rate_limit_headers_rfc_version_ !=
+                envoy::extensions::common::ratelimit::v3::XRateLimitHeadersRFCVersion::EXPLICIT_OFF
+          : rate_limit_headers_rfc_version_ == envoy::extensions::common::ratelimit::v3::
+                                                   XRateLimitHeadersRFCVersion::DRAFT_VERSION_03;
+
+  if (enableXRateLimitHeaders) {
     headers.addReferenceKey(
         HttpFilters::Common::RateLimit::XRateLimitHeaders::get().XRateLimitLimit,
         token_bucket_context_->maxTokens());

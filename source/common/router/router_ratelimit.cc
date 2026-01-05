@@ -347,7 +347,8 @@ RateLimitPolicyEntryImpl::RateLimitPolicyEntryImpl(
     Server::Configuration::CommonFactoryContext& context, absl::Status& creation_status)
     : disable_key_(config.disable_key()),
       stage_(static_cast<uint64_t>(PROTOBUF_GET_WRAPPED_OR_DEFAULT(config, stage, 0))),
-      apply_on_stream_done_(config.apply_on_stream_done()) {
+      apply_on_stream_done_(config.apply_on_stream_done()),
+      enable_x_ratelimit_headers_(config.enable_x_ratelimit_headers()) {
   actions_.reserve(config.actions().size());
   for (const auto& action : config.actions()) {
     switch (action.action_specifier_case()) {
@@ -475,6 +476,8 @@ void RateLimitPolicyEntryImpl::populateDescriptors(std::vector<RateLimit::Descri
   RateLimit::Descriptor descriptor;
   const bool result =
       populateDescriptor(actions_, descriptor.entries_, local_service_cluster, headers, info);
+
+  descriptor.enable_x_rate_limit_headers_ = enable_x_ratelimit_headers_;
 
   if (limit_override_) {
     limit_override_.value()->populateOverride(descriptor, &info.dynamicMetadata());

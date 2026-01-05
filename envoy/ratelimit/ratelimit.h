@@ -50,6 +50,8 @@ using DescriptorEntries = std::vector<DescriptorEntry>;
  */
 struct Descriptor {
   DescriptorEntries entries_;
+  envoy::extensions::common::ratelimit::v3::XRateLimitHeadersRFCVersion
+      enable_x_rate_limit_headers_;
   absl::optional<RateLimitOverride> limit_ = absl::nullopt;
   absl::optional<uint64_t> hits_addend_ = absl::nullopt;
 

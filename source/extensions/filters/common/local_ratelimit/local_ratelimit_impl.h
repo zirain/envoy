@@ -25,6 +25,8 @@ class LocalRateLimiterImpl;
 class RateLimitTokenBucket;
 using RateLimitTokenBucketSharedPtr = std::shared_ptr<RateLimitTokenBucket>;
 using ProtoLocalClusterRateLimit = envoy::extensions::common::ratelimit::v3::LocalClusterRateLimit;
+using XRateLimitHeadersRFCVersion =
+    envoy::extensions::common::ratelimit::v3::XRateLimitHeadersRFCVersion;
 
 class DynamicDescriptor : public Logger::Loggable<Logger::Id::rate_limit_quota> {
 public:
@@ -156,7 +158,7 @@ private:
 class AlwaysDenyLocalRateLimiter : public LocalRateLimiter {
 public:
   LocalRateLimiter::Result requestAllowed(absl::Span<const RateLimit::Descriptor>) override {
-    return {false, nullptr};
+    return {false, XRateLimitHeadersRFCVersion::OFF, nullptr};
   }
 };
 

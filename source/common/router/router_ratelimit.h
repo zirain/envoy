@@ -7,6 +7,7 @@
 
 #include "envoy/config/core/v3/base.pb.h"
 #include "envoy/config/route/v3/route_components.pb.h"
+#include "envoy/extensions/common/ratelimit/v3/ratelimit.pb.h"
 #include "envoy/ratelimit/ratelimit.h"
 #include "envoy/router/router.h"
 #include "envoy/router/router_ratelimit.h"
@@ -290,6 +291,8 @@ private:
   std::vector<RateLimit::DescriptorProducerPtr> actions_;
   absl::optional<RateLimitOverrideActionPtr> limit_override_ = absl::nullopt;
   const bool apply_on_stream_done_ = false;
+  const envoy::extensions::common::ratelimit::v3::XRateLimitHeadersRFCVersion
+      enable_x_ratelimit_headers_;
 };
 
 /**

@@ -9,7 +9,8 @@ namespace RateLimitFilter {
 class XRateLimitHeaderUtils {
 public:
   static Http::ResponseHeaderMapPtr
-  create(Filters::Common::RateLimit::DescriptorStatusListPtr&& descriptor_statuses);
+  create(const std::vector<Envoy::RateLimit::Descriptor>& descriptors,
+         Filters::Common::RateLimit::DescriptorStatusListPtr&& descriptor_statuses);
 
 private:
   static uint32_t
