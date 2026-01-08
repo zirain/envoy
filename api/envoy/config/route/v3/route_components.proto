@@ -2628,7 +2628,7 @@ message RateLimit {
   // Currently, this is only supported by the HTTP global rate filter.
   bool apply_on_stream_done = 6;
 
-  // Allow to diabled the standard version if it's enabled by filter.
+  // Allow to disabled the standard version if it's enabled by filter.
   envoy.extensions.common.ratelimit.v3.XRateLimitHeadersRFCVersion enable_x_ratelimit_headers = 7
       [(validate.rules).enum = {defined_only: true}];
 }
